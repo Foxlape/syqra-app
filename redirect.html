@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opening Hiddify...</title>
+    <style>
+        body { background: #111; color: #fff; font-family: sans-serif; text-align: center; padding-top: 50px; }
+        .loader { border: 4px solid #333; border-top: 4px solid #007aff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        a { color: #007aff; font-size: 18px; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="loader"></div>
+    <h3>Запускаю Hiddify...</h3>
+    <p>Если ничего не происходит, <a id="manual-link" href="#">нажми сюда</a></p>
+
+    <script>
+        // 1. Берем ссылку из адреса
+        const urlParams = new URLSearchParams(window.location.search);
+        const subLink = urlParams.get('link');
+        const name = "ArbuarVPN";
+
+        if (subLink) {
+            // 2. Формируем жесткую ссылку для приложения
+            const deepLink = `hiddify://install-sub?url=${encodeURIComponent(subLink)}&name=${encodeURIComponent(name)}`;
+            
+            // Настраиваем кнопку на всякий случай
+            document.getElementById('manual-link').href = deepLink;
+
+            // 3. БАБАХ! Запускаем редирект через 100мс
+            setTimeout(() => {
+                window.location.href = deepLink;
+            }, 100);
+        } else {
+            document.body.innerHTML = "<h3>Ошибка: Ссылка пустая</h3>";
+        }
+    </script>
+</body>
+</html>

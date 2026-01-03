@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Syqra VPN</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: #09090b; /* Глубокий черный */
+            --card: #18181b;
+            --text: #ffffff;
+            --subtext: #a1a1aa;
+            --accent: #00f260;
+            --accent-dim: rgba(0, 242, 96, 0.1);
+            --gradient: linear-gradient(135deg, #00f260 0%, #0575E6 100%);
+            --border: #27272a;
+        }
+
+        body {
+            background-color: var(--bg); color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Roboto, sans-serif;
+            margin: 0; padding: 16px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        /* КАРТОЧКА ПОЛЬЗОВАТЕЛЯ */
+        .card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 20px;
+            position: relative; overflow: hidden;
+        }
+        .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        .user-block { display: flex; align-items: center; gap: 12px; }
+        .avatar { 
+            width: 46px; height: 46px; border-radius: 50%; 
+            background: var(--gradient); color: #000;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 20px;
+        }
+        .avatar img { width: 100%; height: 100%; border-radius: 50%; }
+        
+        .user-names h3 { margin: 0; font-size: 16px; font-weight: 600; }
+        .plan-badge { 
+            font-size: 11px; color: var(--accent); background: var(--accent-dim);
+            padding: 3px 8px; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px;
+            display: inline-block; margin-top: 4px;
+        }
+
+        .status-dot {
+            height: 10px; width: 10px; background-color: var(--accent);
+            border-radius: 50%; box-shadow: 0 0 10px var(--accent);
+        }
+        .status-expired { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
+
+        .info-grid { display: flex; gap: 10px; }
+        .info-item {
+            flex: 1; background: #27272a; padding: 12px; border-radius: 14px;
+        }
+        .label { font-size: 10px; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;}
+        .value { font-size: 13px; font-weight: 600; }
+
+        /* КНОПКА ПОДКЛЮЧЕНИЯ */
+        .connect-btn {
+            background: var(--gradient);
+            color: #fff; border: none; padding: 18px; border-radius: 16px;
+            font-size: 17px; font-weight: 700; cursor: pointer;
+            width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 8px 20px rgba(0, 242, 96, 0.2);
+            transition: transform 0.1s;
+        }
+        .connect-btn:active { transform: scale(0.98); }
+
+        /* СПИСОК */
+        .menu-header { font-size: 12px; color: var(--subtext); font-weight: 700; padding-left: 10px; margin-bottom: 8px; text-transform: uppercase; }
+        .list-group { background: var(--card); border-radius: 18px; border: 1px solid var(--border); overflow: hidden; }
+        .list-item {
+            padding: 16px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s;
+        }
+        .list-item:last-child { border-bottom: none; }
+        .list-item:active { background: #27272a; }
+        
+        .item-left { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; }
+        .icon { font-size: 18px; width: 24px; text-align: center; }
+        .arrow { color: #52525b; font-size: 14px; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Шапка профиля -->
+    <div class="card">
+        <div class="card-top">
+            <div class="user-block">
+                <div class="avatar" id="user-avatar"></div>
+                <div class="user-names">
+                    <h3 id="user-name">...</h3>
+                    <span id="plan-name" class="plan-badge">SYQRA FREE</span>
+                </div>
+            </div>
+            <div id="status-indicator" class="status-dot"></div>
+        </div>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="label">Истекает</span>
+                <span class="value" id="expire-date">...</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Устройства</span>
+                <span class="value" id="device-limit">1 устройство</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка -->
+    <button class="connect-btn" onclick="connect()">
+        ⚡ Добавить в приложение
+    </button>
+
+    <!-- Инструкции -->
+    <div>
+        <div class="menu-header">Установка</div>
+        <div class="list-group">
+            <div class="list-item" onclick="openLink('https://apps.apple.com/us/app/hiddify-proxy-vpn/id6596588138')">
+                <div class="item-left"><span class="icon">🍏</span> iPhone / iPad</div>
+                <span class="arrow">❯</span>
+            </div>
+            <div class="list-item" onclick="openLink('https://play.google.com/store/apps/details?id=app.hiddify.com')">
+                <div class="item-left"><span class="icon">🤖</span> Android</div>
+                <span class="arrow">❯</span>
+            </div>
+            <div class="list-item" onclick="openLink('https://github.com/hiddify/hiddify-next/releases')">
+                <div class="item-left"><span class="icon">💻</span> Windows / PC</div>
+                <span class="arrow">❯</span>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="menu-header">Опции</div>
+        <div class="list-group">
+            <div class="list-item" onclick="copyLink()">
+                <div class="item-left"><span class="icon">📋</span> Скопировать ключ</div>
+                <span class="arrow" style="font-size: 11px; font-weight: 700;">COPY</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // Парсим параметры
+        const params = new URLSearchParams(window.location.search);
+        const subLink = params.get('link');
+        const status = params.get('status');
+        const dateStr = params.get('date');
+        const planName = params.get('plan') || 'FREE';
+        const limit = params.get('limit') || '1';
+        
+        // Получаем имя. Сначала из URL, если нет - из API Телеграма
+        let userName = params.get('user');
+        if (!userName && tg.initDataUnsafe.user) {
+            userName = tg.initDataUnsafe.user.first_name;
+        }
+        if (!userName) userName = "Пользователь";
+
+        // === ЗАПОЛНЕНИЕ UI ===
+        
+        // 1. Имя
+        document.getElementById('user-name').innerText = decodeURIComponent(userName); // Декодируем %20 и прочее
+        
+        // 2. Аватарка (Пробуем загрузить из ТГ, иначе буква)
+        const avatarDiv = document.getElementById('user-avatar');
+        if (tg.initDataUnsafe.user && tg.initDataUnsafe.user.photo_url) {
+            avatarDiv.innerHTML = `<img src="${tg.initDataUnsafe.user.photo_url}">`;
+        } else {
+            const letter = decodeURIComponent(userName).charAt(0).toUpperCase();
+            avatarDiv.innerText = letter;
+        }
+
+        // 3. Тариф и Статус
+        document.getElementById('plan-name').innerText = `SYQRA ${planName}`;
+        document.getElementById('device-limit').innerText = `${limit} устройство`;
+        document.getElementById('expire-date').innerText = decodeURIComponent(dateStr);
+
+        if (status !== 'active') {
+            document.getElementById('status-indicator').classList.add('status-expired');
+            document.getElementById('plan-name').style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+            document.getElementById('plan-name').style.color = '#ef4444';
+        }
+
+        // === ЛОГИКА ===
+
+        function connect() {
+            if (!subLink) return tg.showAlert("Ошибка: Ссылка не найдена!");
+            
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            // Bridge
+            const encodedUrl = encodeURIComponent(subLink);
+            const bridgeUrl = `https://admin.arbuar.ru:8443/webapp/redirect.html?link=${encodedUrl}`;
+            tg.openLink(bridgeUrl);
+        }
+
+        function openLink(url) {
+            tg.openLink(url);
+        }
+
+        function copyLink() {
+            if (!subLink) return;
+            navigator.clipboard.writeText(subLink).then(() => {
+                tg.HapticFeedback.notificationOccurred('success');
+                tg.showAlert("Ключ скопирован!");
+            });
+        }
+    </script>
+</body>
+</html>
