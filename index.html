@@ -7,7 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: #09090b; /* Глубокий черный */
+            --bg: #09090b;
             --card: #18181b;
             --text: #ffffff;
             --subtext: #a1a1aa;
@@ -24,7 +24,6 @@
             display: flex; flex-direction: column; gap: 20px;
         }
 
-        /* КАРТОЧКА ПОЛЬЗОВАТЕЛЯ */
         .card {
             background: var(--card); border: 1px solid var(--border);
             border-radius: 20px; padding: 20px;
@@ -58,10 +57,13 @@
         .info-item {
             flex: 1; background: #27272a; padding: 12px; border-radius: 14px;
         }
-        .label { font-size: 10px; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;}
+        .label { 
+            font-size: 10px; color: var(--subtext); 
+            text-transform: uppercase; letter-spacing: 0.5px; 
+            display: block; margin-bottom: 4px;
+        }
         .value { font-size: 13px; font-weight: 600; }
 
-        /* КНОПКА ПОДКЛЮЧЕНИЯ */
         .connect-btn {
             background: var(--gradient);
             color: #fff; border: none; padding: 18px; border-radius: 16px;
@@ -72,9 +74,14 @@
         }
         .connect-btn:active { transform: scale(0.98); }
 
-        /* СПИСОК */
-        .menu-header { font-size: 12px; color: var(--subtext); font-weight: 700; padding-left: 10px; margin-bottom: 8px; text-transform: uppercase; }
-        .list-group { background: var(--card); border-radius: 18px; border: 1px solid var(--border); overflow: hidden; }
+        .menu-header { 
+            font-size: 12px; color: var(--subtext); font-weight: 700; 
+            padding-left: 10px; margin-bottom: 8px; text-transform: uppercase; 
+        }
+        .list-group { 
+            background: var(--card); border-radius: 18px; 
+            border: 1px solid var(--border); overflow: hidden; 
+        }
         .list-item {
             padding: 16px; display: flex; align-items: center; justify-content: space-between;
             border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s;
@@ -82,15 +89,15 @@
         .list-item:last-child { border-bottom: none; }
         .list-item:active { background: #27272a; }
         
-        .item-left { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 500; }
+        .item-left { 
+            display: flex; align-items: center; gap: 12px; 
+            font-size: 15px; font-weight: 500; 
+        }
         .icon { font-size: 18px; width: 24px; text-align: center; }
         .arrow { color: #52525b; font-size: 14px; }
-
     </style>
 </head>
 <body>
-
-    <!-- Шапка профиля -->
     <div class="card">
         <div class="card-top">
             <div class="user-block">
@@ -108,18 +115,16 @@
                 <span class="value" id="expire-date">...</span>
             </div>
             <div class="info-item">
-                <span class="label">Устройства</span>
-                <span class="value" id="device-limit">1 устройство</span>
+                <span class="label">Устройств</span>
+                <span class="value" id="device-limit">1</span>
             </div>
         </div>
     </div>
 
-    <!-- Кнопка -->
     <button class="connect-btn" onclick="connect()">
         ⚡ Добавить в приложение
     </button>
 
-    <!-- Инструкции -->
     <div>
         <div class="menu-header">Установка</div>
         <div class="list-group">
@@ -152,27 +157,24 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Парсим параметры
         const params = new URLSearchParams(window.location.search);
         const subLink = params.get('link');
         const status = params.get('status');
         const dateStr = params.get('date');
         const planName = params.get('plan') || 'FREE';
-        const limit = params.get('limit') || '1';
+        const limit = params.get('limit') || '3';
+        const devices = params.get('devices') || '1';
         
-        // Получаем имя. Сначала из URL, если нет - из API Телеграма
         let userName = params.get('user');
         if (!userName && tg.initDataUnsafe.user) {
             userName = tg.initDataUnsafe.user.first_name;
         }
         if (!userName) userName = "Пользователь";
 
-        // === ЗАПОЛНЕНИЕ UI ===
+        // Имя
+        document.getElementById('user-name').innerText = decodeURIComponent(userName);
         
-        // 1. Имя
-        document.getElementById('user-name').innerText = decodeURIComponent(userName); // Декодируем %20 и прочее
-        
-        // 2. Аватарка (Пробуем загрузить из ТГ, иначе буква)
+        // Аватар
         const avatarDiv = document.getElementById('user-avatar');
         if (tg.initDataUnsafe.user && tg.initDataUnsafe.user.photo_url) {
             avatarDiv.innerHTML = `<img src="${tg.initDataUnsafe.user.photo_url}">`;
@@ -181,25 +183,36 @@
             avatarDiv.innerText = letter;
         }
 
-        // 3. Тариф и Статус
+        // Тариф
         document.getElementById('plan-name').innerText = `SYQRA ${planName}`;
-        document.getElementById('device-limit').innerText = `${limit} устройство`;
+        
+        // УСТРОЙСТВА - используем параметр devices
+        const deviceCount = parseInt(devices);
+        let deviceText = '';
+        if (deviceCount === 1) {
+            deviceText = '1 устройство';
+        } else if (deviceCount >= 2 && deviceCount <= 4) {
+            deviceText = `${deviceCount} устройства`;
+        } else {
+            deviceText = `${deviceCount} устройств`;
+        }
+        document.getElementById('device-limit').innerText = deviceText;
+        
+        // Дата
         document.getElementById('expire-date').innerText = decodeURIComponent(dateStr);
 
+        // Статус
         if (status !== 'active') {
             document.getElementById('status-indicator').classList.add('status-expired');
             document.getElementById('plan-name').style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
             document.getElementById('plan-name').style.color = '#ef4444';
         }
 
-        // === ЛОГИКА ===
-
         function connect() {
             if (!subLink) return tg.showAlert("Ошибка: Ссылка не найдена!");
             
             tg.HapticFeedback.impactOccurred('medium');
             
-            // Bridge
             const encodedUrl = encodeURIComponent(subLink);
             const bridgeUrl = `https://admin.arbuar.ru:8443/webapp/redirect.html?link=${encodedUrl}`;
             tg.openLink(bridgeUrl);
